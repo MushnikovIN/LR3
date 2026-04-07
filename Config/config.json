@@ -2,8 +2,8 @@
   "circuit": {
     "branch_count" : 3,
     "branches" : [
-      {"num" : 1, "node_begin" : 0, "node_end" : 1, "R" : 5, "L" : 0, "C" : 0, "E" : 10, "J" : 0},
-      {"num" : 2, "node_begin" : 0, "node_end" : 1, "R" : 10, "L" : 0, "C" : 0, "E" : 0, "J" : 10},
+      {"num" : 1, "node_begin" : 0, "node_end" : 1, "R" : 5, "L" : 10e-3, "C" : 0, "E" : 10, "J" : 0},
+      {"num" : 2, "node_begin" : 0, "node_end" : 1, "R" : 10, "L" : 0, "C" : 5e-6, "E" : 0, "J" : 10},
       {"num" : 3, "node_begin" : 0, "node_end" : 1, "R" : 30, "L" : 0, "C" : 0, "E" : 10, "J" : 0}
     ]
   }

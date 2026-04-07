@@ -10,7 +10,7 @@ def main():
     """Основная функция демонстрации работы схемы"""
     
     # Чтение конфигурации из JSON файла
-    config_reader = ConfigReader('/workspace/Config/config.json')
+    config_reader = ConfigReader('Config/config.json')
     elements = config_reader.read()
     
     print("=" * 60)
@@ -24,7 +24,7 @@ def main():
         print(f"  - {elem.__class__.__name__}: узлы {elem.node_begin}-{elem.node_end}")
     
     # Создание генератора схемы с шагом интегрирования dt
-    dt = 0.001  # 1 мс
+    dt = 0.000001  # 1 мс
     schem_generator = SchemGenerator(elements, dt)
     
     print("\n" + "=" * 60)

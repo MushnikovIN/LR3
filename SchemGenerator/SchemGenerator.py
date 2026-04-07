@@ -47,7 +47,7 @@ class SchemGenerator:
         Эквивалентная схема: параллельно R_C = Δt/(2C) и источник тока I_history
     """
     
-    def __init__(self, elements: List[Element], dt: float = 0.001):
+    def __init__(self, elements: List[Element], dt: float = 0.000001):
         """
         Args:
             elements: Список элементов схемы
