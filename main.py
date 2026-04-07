@@ -9,51 +9,108 @@ from Solver.Solver import Solver
 def main():
     """Основная функция демонстрации работы схемы"""
     
-    # Чтение конфигурации из JSON файла
+    # =========================================================================
+    # ЭТАП 1: Считывание из файла config.json
+    # =========================================================================
+    print("=" * 70)
+    print("ЭТАП 1: СЧИТЫВАНИЕ ИЗ ФАЙЛА config.json")
+    print("=" * 70)
+    
     config_reader = ConfigReader('Config/config.json')
     elements = config_reader.read()
     
-    print("=" * 60)
-    print("Чтение конфигурации схемы из JSON")
-    print("=" * 60)
-    print(f"Количество ветвей: {config_reader.get_branch_count()}")
-    print(f"Количество узлов: {config_reader.get_nodes_count()}")
-    print(f"Элементы схемы: {len(elements)}")
+    print(f"\nИсходная схема из config.json:")
+    print(f"  Количество ветвей: {config_reader.get_branch_count()}")
+    print(f"  Количество узлов: {config_reader.get_nodes_count()}")
+    print(f"  Всего элементов: {len(elements)}")
     
+    print("\n  Состав исходной схемы по элементам:")
+    # Группируем элементы по ветвям для наглядного отображения
+    branches_dict = {}
     for elem in elements:
-        print(f"  - {elem.__class__.__name__}: узлы {elem.node_begin}-{elem.node_end}")
+        key = (elem.node_begin, elem.node_end)
+        if key not in branches_dict:
+            branches_dict[key] = []
+        branches_dict[key].append(elem)
+    
+    for (node_begin, node_end), elems in branches_dict.items():
+        print(f"\n  Ветвь {node_begin}-{node_end}:")
+        for elem in elems:
+            elem_type = elem.__class__.__name__
+            if elem_type == 'R':
+                print(f"    - R: {elem.resistance} Ом")
+            elif elem_type == 'L':
+                print(f"    - L: {elem.inductance} Гн")
+            elif elem_type == 'C':
+                print(f"    - C: {elem.capacity} Ф")
+            elif elem_type == 'E':
+                print(f"    - E: {elem.voltage} В")
+            elif elem_type == 'J':
+                print(f"    - J: {elem.current} А")
     
     # Создание генератора схемы с шагом интегрирования dt
-    dt = 0.000001  # 1 мс
+    dt = 0.000001  # 1 мкс
     schem_generator = SchemGenerator(elements, dt)
     
-    print("\n" + "=" * 60)
-    print("Преобразование по методу Доммеля")
-    print("=" * 60)
+    # =========================================================================
+    # ЭТАП 2: Преобразование накопителей в активные сопротивления с источниками
+    # =========================================================================
+    print("\n" + "=" * 70)
+    print("ЭТАП 2: ПРЕОБРАЗОВАНИЕ НАКОПИТЕЛЕЙ В АКТИВНЫЕ СОПРОТИВЛЕНИЯ")
+    print("         (МЕТОД ДОММЕЛЯ)")
+    print("=" * 70)
+    
+    print(f"\nПараметры преобразования:")
+    print(f"  Шаг интегрирования dt = {dt} с ({dt*1e6:.0f} мкс)")
     
     # Преобразование элементов по методу Доммеля
     dommel_branches = schem_generator.transform_to_dommel()
     
-    print(f"Ветвей после преобразования: {len(dommel_branches)}")
-    for branch in dommel_branches:
-        print(f"  Ветвь {branch.node_begin}-{branch.node_end}: "
-              f"R={branch.resistance:.4f} Ом, "
-              f"E={branch.voltage_source:.4f} В, "
-              f"J={branch.current_source:.4f} А")
+    print(f"\nСхема после преобразования по методу Доммеля:")
+    print(f"  Количество ветвей: {len(dommel_branches)}")
     
-    # Конвертация для метода узловых потенциалов
-    print("\n" + "=" * 60)
-    print("Конвертация для метода узловых потенциалов")
-    print("=" * 60)
+    print("\n  Параметры ветвей (активное сопротивление + источники):")
+    for i, branch in enumerate(dommel_branches, 1):
+        print(f"\n  Ветвь {i} (узлы {branch.node_begin}-{branch.node_end}):")
+        print(f"    Активное сопротивление R = {branch.resistance:.6f} Ом")
+        print(f"    Источник напряжения E = {branch.voltage_source:.6f} В")
+        print(f"    Источник тока J = {branch.current_source:.6f} А")
+        
+        # Показываем эквивалентную схему
+        if branch.voltage_source != 0 or branch.current_source != 0:
+            print(f"    Эквивалентная схема: R последовательно с E или R параллельно с J")
+    
+    # =========================================================================
+    # ЭТАП 3: Преобразование к схеме с источниками тока и активными сопротивлениями
+    # =========================================================================
+    print("\n" + "=" * 70)
+    print("ЭТАП 3: ПРЕОБРАЗОВАНИЕ К СХЕМЕ С ИСТОЧНИКАМИ ТОКА")
+    print("         (ПРЕОБРАЗОВАНИЕ НОРТОНА ДЛЯ МЕТОДА УЗЛОВЫХ ПОТЕНЦИАЛОВ)")
+    print("=" * 70)
     
     nodal_branches, nodes_count = schem_generator.convert_to_nodal_analysis()
     
-    print(f"Количество узлов: {nodes_count}")
-    print(f"Ветвей для МУП: {len(nodal_branches)}")
-    for branch in nodal_branches:
-        print(f"  Ветвь {branch.node_begin}-{branch.node_end}: "
-              f"R={branch.resistance:.4f} Ом, "
-              f"J={branch.current_source:.4f} А")
+    print(f"\nСхема для метода узловых потенциалов:")
+    print(f"  Количество узлов: {nodes_count}")
+    print(f"  Количество ветвей: {len(nodal_branches)}")
+    
+    print("\n  Параметры ветвей (проводимости и источники тока):")
+    for i, branch in enumerate(nodal_branches, 1):
+        conductance = 1.0 / branch.resistance if branch.resistance > 0 else float('inf')
+        print(f"\n  Ветвь {i} (узлы {branch.node_begin}-{branch.node_end}):")
+        print(f"    Сопротивление R = {branch.resistance:.6f} Ом")
+        if branch.resistance > 0:
+            print(f"    Проводимость G = {conductance:.6f} См")
+        else:
+            print(f"    Проводимость G = ∞ (идеальный источник)")
+        print(f"    Источник тока J = {branch.current_source:.6f} А")
+    
+    print("\n" + "-" * 70)
+    print("  ИТОГО в новой схеме:")
+    print(f"    Ветвей: {len(nodal_branches)}")
+    print(f"    Узлов: {nodes_count} (из них базисный узел 0)")
+    print(f"    Независимых узловых потенциалов: {nodes_count - 1}")
+    print("-" * 70)
     
     # Формирование матрицы проводимостей и вектора токов
     G = schem_generator.get_conductance_matrix(nodal_branches, nodes_count)
