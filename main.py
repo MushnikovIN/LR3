@@ -165,30 +165,213 @@ def main():
     print("ЭТАП 4: ПОСТРОЕНИЕ ГРАФИКОВ")
     print("=" * 70)
     
+    # =========================================================================
+    # РАСЧЕТ ТОКОВ И НАПРЯЖЕНИЙ ИСХОДНОЙ СХЕМЫ
+    # =========================================================================
+    print("\nРасчет токов ветвей и напряжений узлов исходной схемы...")
+    
+    # Массивы для сохранения результатов исходной схемы
+    time_array_orig = time_array.copy()
+    original_branch_currents_history = defaultdict(list)  # Токи ветвей исходной схемы
+    node_voltages_history = defaultdict(list)  # Напряжения между узлами
+    
+    # Получаем уникальные узлы исходной схемы
+    all_nodes = set()
+    for elem in elements:
+        all_nodes.add(elem.node_begin)
+        all_nodes.add(elem.node_end)
+    all_nodes = sorted(list(all_nodes))
+    
+    # Группируем элементы исходной схемы по ветвям
+    original_branches_dict = {}
+    for elem in elements:
+        key = (elem.node_begin, elem.node_end)
+        if key not in original_branches_dict:
+            original_branches_dict[key] = []
+        original_branches_dict[key].append(elem)
+    
+    # Используем уже рассчитанные данные из основного цикла
+    # Для каждого шага времени восстанавливаем потенциалы узлов и рассчитываем токи
+    print(f"  Обработка {len(time_array)} шагов времени...")
+    
+    # Временный генератор схемы для восстановления состояния на каждом шаге
+    schem_gen_replay = SchemGenerator(elements, dt)
+    
+    # Начальный шаг (0)
+    nodal_branches_0, nodes_count_0 = schem_gen_replay.convert_to_nodal_analysis()
+    G_0 = schem_gen_replay.get_conductance_matrix(nodal_branches_0, nodes_count_0)
+    I_0 = schem_gen_replay.get_current_vector(nodal_branches_0, nodes_count_0)
+    node_potentials_0 = solver.solve_nodal_analysis(G_0, I_0)
+    currents_0 = solver.calculate_branch_currents(nodal_branches_0, node_potentials_0)
+    voltages_0 = solver.calculate_branch_voltages(nodal_branches_0, node_potentials_0)
+    schem_gen_replay.update_history(voltages_0, currents_0)
+    
+    # Сохраняем потенциалы узлов для шага 0
+    # Узел 0 - базисный с потенциалом 0
+    # node_potentials_0 содержит потенциалы узлов 1, 2, ..., nodes_count-1
+    potentials_full_0 = [0.0] + node_potentials_0
+    for node in all_nodes:
+        if node == 0:
+            node_voltages_history[node].append(0.0)  # Базисный узел
+        elif node < len(potentials_full_0):
+            node_voltages_history[node].append(potentials_full_0[node])
+        else:
+            node_voltages_history[node].append(0.0)  # Если узла нет в решениях
+    
+    # Рассчитываем токи через каждую ветвь исходной схемы для шага 0
+    for (node_begin, node_end), elems in original_branches_dict.items():
+        u_begin = potentials_full_0[node_begin] if node_begin < len(potentials_full_0) else 0.0
+        u_end = potentials_full_0[node_end] if node_end < len(potentials_full_0) else 0.0
+        u_branch = u_begin - u_end
+        
+        R_total = 0.0
+        L_elem = None
+        C_elem = None
+        E_total = 0.0
+        J_total = 0.0
+        
+        for elem in elems:
+            elem_type = elem.__class__.__name__
+            if elem_type == 'R':
+                R_total += elem.resistance
+            elif elem_type == 'L':
+                L_elem = elem
+            elif elem_type == 'C':
+                C_elem = elem
+            elif elem_type == 'E':
+                E_total += elem.voltage
+            elif elem_type == 'J':
+                J_total += elem.current
+        
+        branch_key = f"{node_begin}-{node_end}"
+        
+        if J_total != 0:
+            branch_current = J_total
+        elif L_elem is not None:
+            elem_key = (L_elem.node_begin, L_elem.node_end)
+            branch_current = schem_gen_replay.L_current_history.get(elem_key, 0.0)
+        elif C_elem is not None:
+            branch_current = 0.0  # Начальный ток через емкость
+        else:
+            if R_total > 0:
+                branch_current = (u_branch - E_total) / R_total
+            else:
+                branch_current = 0.0
+        
+        original_branch_currents_history[branch_key].append(branch_current)
+    
+    # Основной цикл для остальных шагов
+    for step_idx in range(1, len(time_array)):
+        dommel_branches = schem_gen_replay.transform_to_dommel()
+        nodal_branches, nodes_count = schem_gen_replay.convert_to_nodal_analysis()
+        G = schem_gen_replay.get_conductance_matrix(nodal_branches, nodes_count)
+        I = schem_gen_replay.get_current_vector(nodal_branches, nodes_count)
+        node_potentials = solver.solve_nodal_analysis(G, I)
+        currents = solver.calculate_branch_currents(nodal_branches, node_potentials)
+        voltages = solver.calculate_branch_voltages(nodal_branches, node_potentials)
+        
+        # Добавляем базисный узел с потенциалом 0
+        potentials_full = [0.0] + node_potentials
+        
+        # Сохраняем потенциалы узлов
+        for node in all_nodes:
+            if node == 0:
+                node_voltages_history[node].append(0.0)  # Базисный узел
+            elif node < len(potentials_full):
+                node_voltages_history[node].append(potentials_full[node])
+            else:
+                node_voltages_history[node].append(0.0)
+        
+        # Рассчитываем токи через каждую ветвь исходной схемы
+        for (node_begin, node_end), elems in original_branches_dict.items():
+            u_begin = potentials_full[node_begin] if node_begin < len(potentials_full) else 0.0
+            u_end = potentials_full[node_end] if node_end < len(potentials_full) else 0.0
+            u_branch = u_begin - u_end
+            
+            R_total = 0.0
+            L_elem = None
+            C_elem = None
+            E_total = 0.0
+            J_total = 0.0
+            
+            for elem in elems:
+                elem_type = elem.__class__.__name__
+                if elem_type == 'R':
+                    R_total += elem.resistance
+                elif elem_type == 'L':
+                    L_elem = elem
+                elif elem_type == 'C':
+                    C_elem = elem
+                elif elem_type == 'E':
+                    E_total += elem.voltage
+                elif elem_type == 'J':
+                    J_total += elem.current
+            
+            branch_key = f"{node_begin}-{node_end}"
+            
+            if J_total != 0:
+                branch_current = J_total
+            elif L_elem is not None:
+                elem_key = (L_elem.node_begin, L_elem.node_end)
+                branch_current = schem_gen_replay.L_current_history.get(elem_key, 0.0)
+            elif C_elem is not None:
+                elem_key = (C_elem.node_begin, C_elem.node_end)
+                u_C_prev = schem_gen_replay.C_voltage_history.get(elem_key, 0.0)
+                u_C_curr = u_branch
+                branch_current = C_elem.capacity * (u_C_curr - u_C_prev) / dt
+            else:
+                if R_total > 0:
+                    branch_current = (u_branch - E_total) / R_total
+                else:
+                    branch_current = 0.0
+            
+            original_branch_currents_history[branch_key].append(branch_current)
+        
+        # Обновляем историю реактивных элементов
+        schem_gen_replay.update_history(voltages, currents)
+        
+        # Прогресс
+        if step_idx % (len(time_array) // 10) == 0 or step_idx == len(time_array) - 1:
+            progress = 100 * step_idx / (len(time_array) - 1)
+            print(f"  Шаг {step_idx} из {len(time_array)-1} ({progress:.0f}%)")
+    
+    print(f"  Рассчитано токов для {len(original_branch_currents_history)} ветвей")
+    print(f"  Рассчитано потенциалов для {len(node_voltages_history)} узлов")
+    
     # Создаем фигуру с подграфиками
-    fig, axes = plt.subplots(2, 1, figsize=(12, 8))
+    num_plots = len(original_branch_currents_history) + len(all_nodes)
+    fig_height = max(6, num_plots * 2.5)
     
-    # График токов
-    ax1 = axes[0]
-    for key, values in currents_history.items():
-        label = f'Ток ветви {key[0]}-{key[1]}'
-        ax1.plot(time_array, values, label=label, linewidth=1.5)
-    ax1.set_xlabel('Время, с')
-    ax1.set_ylabel('Ток, А')
-    ax1.set_title('Зависимость токов в ветвях от времени')
-    ax1.grid(True, alpha=0.3)
-    ax1.legend(loc='best')
+    if num_plots == 1:
+        fig, ax_single = plt.subplots(1, 1, figsize=(12, fig_height))
+        axes = [ax_single]
+    else:
+        fig, axes = plt.subplots(num_plots, 1, figsize=(12, fig_height))
+        axes = list(axes) if not isinstance(axes, list) else axes
     
-    # График напряжений
-    ax2 = axes[1]
-    for key, values in voltages_history.items():
-        label = f'Напряжение ветви {key[0]}-{key[1]}'
-        ax2.plot(time_array, values, label=label, linewidth=1.5)
-    ax2.set_xlabel('Время, с')
-    ax2.set_ylabel('Напряжение, В')
-    ax2.set_title('Зависимость напряжений на ветвях от времени')
-    ax2.grid(True, alpha=0.3)
-    ax2.legend(loc='best')
+    plot_idx = 0
+    
+    # График токов ветвей исходной схемы
+    for branch_key, values in original_branch_currents_history.items():
+        ax = axes[plot_idx]
+        ax.plot(time_array_orig, values, label=f'Ток ветви {branch_key}', color='blue', linewidth=1.5)
+        ax.set_xlabel('Время, с')
+        ax.set_ylabel('Ток, А')
+        ax.set_title(f'Ток ветви {branch_key} исходной схемы')
+        ax.grid(True, alpha=0.3)
+        ax.legend(loc='best')
+        plot_idx += 1
+    
+    # График потенциалов узлов
+    for node in all_nodes:
+        ax = axes[plot_idx]
+        ax.plot(time_array_orig, node_voltages_history[node], label=f'Потенциал узла {node}', color='green', linewidth=1.5)
+        ax.set_xlabel('Время, с')
+        ax.set_ylabel('Напряжение, В')
+        ax.set_title(f'Потенциал узла {node}')
+        ax.grid(True, alpha=0.3)
+        ax.legend(loc='best')
+        plot_idx += 1
     
     plt.tight_layout()
     plt.savefig('/workspace/results.png', dpi=150, bbox_inches='tight')
@@ -200,13 +383,19 @@ def main():
     print("Финальные значения (на последний момент времени):")
     print("=" * 60)
     
-    print("\nТоки в ветвях:")
-    for key, values in currents_history.items():
-        print(f"  Ветвь {key[0]}-{key[1]}: {values[-1]:.6f} А")
+    print("\nТоки в ветвях исходной схемы:")
+    for branch_key, values in original_branch_currents_history.items():
+        print(f"  Ветвь {branch_key}: {values[-1]:.6f} А")
     
-    print("\nНапряжения на ветвях:")
-    for key, values in voltages_history.items():
-        print(f"  Ветвь {key[0]}-{key[1]}: {values[-1]:.6f} В")
+    print("\nПотенциалы узлов:")
+    for node in all_nodes:
+        print(f"  Узел {node}: {node_voltages_history[node][-1]:.6f} В")
+    
+    print("\nНапряжения между узлами:")
+    for i, node1 in enumerate(all_nodes):
+        for node2 in all_nodes[i+1:]:
+            voltage_diff = node_voltages_history[node1][-1] - node_voltages_history[node2][-1]
+            print(f"  U({node1}-{node2}): {voltage_diff:.6f} В")
 
 
 if __name__ == "__main__":
