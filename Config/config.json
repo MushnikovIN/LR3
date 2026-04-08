@@ -2,9 +2,14 @@
   "circuit": {
     "branch_count" : 3,
     "branches" : [
-      {"num" : 1, "node_begin" : 0, "node_end" : 1, "R" : 5, "L" : 0, "C" : 0, "E" : 10, "J" : 0},
-      {"num" : 2, "node_begin" : 0, "node_end" : 1, "R" : 10, "L" : 0, "C" : 0, "E" : 0, "J" : 10},
-      {"num" : 3, "node_begin" : 0, "node_end" : 1, "R" : 30, "L" : 0, "C" : 0, "E" : 10, "J" : 0}
+      {"num" : 1, "node_begin" : 0, "node_end" : 1, "type" : "E", "value" : 10},
+      {"num" : 2, "node_begin" : 1, "node_end" : 2, "type" : "L", "value" : 10e-3},
+      {"num" : 3, "node_begin" : 2, "node_end" : 6, "type" : "R", "value" : 5},
+      {"num" : 4, "node_begin" : 0, "node_end" : 3, "type" : "R", "value" : 10},
+      {"num" : 5, "node_begin" : 3, "node_end" : 4, "type" : "C", "value" : 5e-6},
+      {"num" : 6, "node_begin" : 4, "node_end" : 6, "type" : "J", "value" : 10},
+      {"num" : 7, "node_begin" : 0, "node_end" : 5, "type" : "E", "value" : 10},
+      {"num" : 8, "node_begin" : 5, "node_end" : 6, "type" : "R", "value" : 30}
     ]
   }
 }
