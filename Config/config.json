@@ -1,6 +1,6 @@
 {
   "circuit": {
-    "branch_count" : 3,
+    "branch_count" : 8,
     "branches" : [
       {"num" : 1, "node_begin" : 0, "node_end" : 1, "type" : "E", "value" : 10},
       {"num" : 2, "node_begin" : 1, "node_end" : 2, "type" : "L", "value" : 10e-3},
