@@ -1,13 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="f9758bb2-89cb-4d6c-a247-a1038be2f786" name="Changes" comment="add exercise">
-      <change afterPath="$PROJECT_DIR$/Config/config2.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Config/config3.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/PythonProject1.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/PythonProject1.iml" afterDir="false" />
+    <list default="true" id="f9758bb2-89cb-4d6c-a247-a1038be2f786" name="Changes" comment="version alpha">
+      <change afterPath="$PROJECT_DIR$/Config/config4.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Config/config5.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graph_maker/graph_maker.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Config/ConfigReader.py" beforeDir="false" afterPath="$PROJECT_DIR$/Config/ConfigReader.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Config/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/Config/config1.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Config/config1.json" beforeDir="false" afterPath="$PROJECT_DIR$/Config/config1.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Config/config2.json" beforeDir="false" afterPath="$PROJECT_DIR$/Config/config2.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Config/config3.json" beforeDir="false" afterPath="$PROJECT_DIR$/Config/config3.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Element/Element.py" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/SchemGenerator/SchemGenerator.py" beforeDir="false" afterPath="$PROJECT_DIR$/SchemGenerator/SchemGenerator.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Solver/Solver.py" beforeDir="false" afterPath="$PROJECT_DIR$/Solver/Solver.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
@@ -27,7 +29,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="New-Try2" />
+        <entry key="$PROJECT_DIR$" value="new-try" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -58,11 +60,12 @@
     "Python.ConfigReader.executor": "Run",
     "Python.Element.executor": "Run",
     "Python.SchemGenerator.executor": "Run",
+    "Python.Solver.executor": "Run",
     "Python.main.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
     "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "new-try",
+    "git-widget-placeholder": "aplha-version",
     "last_opened_file_path": "C:/Users/user/PycharmProjects/PythonProject1/Config"
   }
 }]]></component>
@@ -111,7 +114,15 @@
       <option name="project" value="LOCAL" />
       <updated>1775567036825</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="version alpha">
+      <option name="closed" value="true" />
+      <created>1775735658443</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1775735658443</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -128,6 +139,18 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="init" />
     <MESSAGE value="add exercise" />
-    <option name="LAST_COMMIT_MESSAGE" value="" />
+    <MESSAGE value="version alpha" />
+    <option name="LAST_COMMIT_MESSAGE" value="version alpha" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/SchemGenerator/SchemGenerator.py</url>
+          <line>74</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>

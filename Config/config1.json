@@ -1,16 +1,11 @@
 {
   "circuit": {
-    "branch_count" : 8,
-    "node_count" : 7,
+    "branch_count" : 3,
+    "node_count" : 3,
     "branches" : [
       {"num" : 1, "node_begin" : 0, "node_end" : 1, "type" : "E", "value" : 10},
-      {"num" : 2, "node_begin" : 1, "node_end" : 2, "type" : "L", "value" : 10e-3},
-      {"num" : 3, "node_begin" : 2, "node_end" : 6, "type" : "R", "value" : 5},
-      {"num" : 4, "node_begin" : 0, "node_end" : 3, "type" : "R", "value" : 10},
-      {"num" : 5, "node_begin" : 3, "node_end" : 4, "type" : "C", "value" : 5e-6},
-      {"num" : 6, "node_begin" : 4, "node_end" : 6, "type" : "J", "value" : 10},
-      {"num" : 7, "node_begin" : 0, "node_end" : 5, "type" : "E", "value" : 10},
-      {"num" : 8, "node_begin" : 5, "node_end" : 6, "type" : "R", "value" : 30}
+      {"num" : 2, "node_begin" : 1, "node_end" : 2, "type" : "L", "value" : 0.01},
+      {"num" : 3, "node_begin" : 2, "node_end" : 0, "type" : "R", "value" : 10}
     ]
   }
 }

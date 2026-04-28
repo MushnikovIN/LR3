@@ -12,15 +12,17 @@ class Solver:
         U_res = np.zeros((circuit.node_count, 1))
         I_res = np.zeros((circuit.branch_count, 1))
 
+        print(branches)
 
         while t < T-0.0000001:
             Jv = []
             for br in branches:
-                if branches[br].type == 'L':
+                #print(branches[br].get_type() == 'C')
+                if branches[br].get_type() == 'L':
                     Jv.append(branches[br].i + branches[br].U * dt / 2 / branches[br].value)
-                elif branches[br].type  == 'C':
-                    Jv.append(branches[br].i + branches[br].U / dt * 2 * branches[br].value)
-                elif branches[br].type  == 'Jsin':
+                elif branches[br].get_type() == 'C':
+                    Jv.append(0 - branches[br].i - branches[br].U / dt * 2 * branches[br].value)
+                elif branches[br].get_type()  == 'Jsin':
                     Jv.append(branches[br].value[0]*math.sin(branches[br].value[1]*2*math.pi*t + branches[br].value[2]*math.pi/180))
                 else:
                     Jv.append(branches[br].J)

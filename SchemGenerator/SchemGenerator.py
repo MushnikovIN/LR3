@@ -29,6 +29,9 @@ class Branch:
     def get_G(self):
         return self.G
 
+    def get_type(self):
+        return self.type
+
     def __repr__(self):
         return str(self.__dict__)
 
