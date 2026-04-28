@@ -1,0 +1,11 @@
+{
+  "circuit": {
+    "branch_count" : 3,
+    "node_count" : 3,
+    "branches" : [
+      {"num" : 1, "node_begin" : 0, "node_end" : 1, "type" : "E", "value" : 10},
+      {"num" : 2, "node_begin" : 1, "node_end" : 2, "type" : "C", "value" : 1e-6},
+      {"num" : 3, "node_begin" : 2, "node_end" : 0, "type" : "R", "value" : 10}
+    ]
+  }
+}
